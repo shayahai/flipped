@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex,nofollow">
+<title>Flipped by AMKAR</title>
+__PWA__
+<style>
+:root{--paper:#F7F2EA;--sheet:#FFFFFF;--ink:#3B2C22;--muted:#7C7167;--rule:#E2D9CC;--accent:#A68A6D;--warn:#A5482A;--f:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--paper);color:var(--ink);font:15px/1.5 var(--f);-webkit-font-smoothing:antialiased;min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:28px 22px}
+main{width:100%;max-width:360px}
+.word{font-weight:800;font-size:24px;letter-spacing:.3em;line-height:1}
+.flipF{display:inline-block;transform:scaleX(-1);letter-spacing:0;margin-right:.3em}
+.by{margin-top:5px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.eyebrow{margin-top:54px;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);font-weight:500}
+h1{font-weight:300;font-size:34px;letter-spacing:-.03em;line-height:1.1;margin:10px 0 22px}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+input[type=password],input[type=text]{width:100%;padding:13px 14px;border:1px solid var(--rule);border-radius:2px;background:var(--sheet);font:500 17px var(--f);letter-spacing:.08em;color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:flex;align-items:center;gap:8px;margin:14px 0 18px;font-size:13px;color:var(--ink)}
+.row input{width:16px;height:16px;accent-color:var(--ink);margin:0}
+.row label{margin:0;font-size:13px;color:var(--ink)}
+button{width:100%;padding:14px 16px;border:1px solid var(--ink);border-radius:2px;background:var(--ink);color:var(--paper);font:500 14px var(--f);cursor:pointer}
+button[disabled]{opacity:.6;cursor:default}
+#msg{min-height:20px;margin:10px 0 0;font-size:13px;color:var(--warn)}
+.fine{margin-top:44px;padding-top:16px;border-top:1px solid var(--rule);font-size:12px;color:var(--muted)}
+#gate[hidden]{display:none}
+</style>
+</head>
+<body>
+<main id="gate" hidden>
+  <div class="word"><span class="flipF">F</span>LIPPED</div>
+  <div class="by">by AMKAR</div>
+  <div class="eyebrow">Renovation planner</div>
+  <h1>Enter your access code.</h1>
+  <form id="f" autocomplete="off">
+    <label for="code">Access code</label>
+    <input id="code" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" required>
+    <div class="row"><input id="keep" type="checkbox" checked><label for="keep">Remember on this device</label></div>
+    <button id="go" type="submit">Open the planner</button>
+    <p id="msg" role="alert"></p>
+  </form>
+  <p class="fine">Need a code? Call Bathroom Flip on 0431 551 311.</p>
+</main>
+<noscript><p style="font:15px sans-serif;padding:24px">This planner needs JavaScript switched on.</p></noscript>
+<script>
+(function(){
+  var D="__PAYLOAD__",SALT="__SALT__",IV="__IV__",IT=__ITER__,KEY="flipped-gate-v1";
+  function b(s){var x=atob(s),u=new Uint8Array(x.length);for(var i=0;i<x.length;i++)u[i]=x.charCodeAt(i);return u;}
+  function b64(u){var s="";for(var i=0;i<u.length;i++)s+=String.fromCharCode(u[i]);return btoa(s);}
+  function el(id){return document.getElementById(id);}
+  function keyFrom(code){return crypto.subtle.importKey("raw",new TextEncoder().encode(code),"PBKDF2",false,["deriveBits"])
+    .then(function(km){return crypto.subtle.deriveBits({name:"PBKDF2",hash:"SHA-256",salt:b(SALT),iterations:IT},km,256);})
+    .then(function(bits){return new Uint8Array(bits);});}
+  function openWith(raw){return crypto.subtle.importKey("raw",raw,"AES-GCM",false,["decrypt"])
+    .then(function(k){return crypto.subtle.decrypt({name:"AES-GCM",iv:b(IV)},k,b(D));})
+    .then(function(pt){return new TextDecoder().decode(pt);});}
+  function show(html){document.open();document.write(html);document.close();}
+  function gate(){el("gate").hidden=false;try{el("code").focus();}catch(e){}}
+  try{if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(function(){});}catch(e){}
+  if(!(window.crypto&&crypto.subtle)){el("gate").hidden=false;el("msg").textContent="This browser can't open the planner. Try the latest Safari or Chrome.";el("go").disabled=true;return;}
+  el("f").addEventListener("submit",function(ev){ev.preventDefault();
+    var code=el("code").value.trim(),go=el("go"),msg=el("msg");if(!code)return;
+    go.disabled=true;go.textContent="Opening…";msg.textContent="";
+    keyFrom(code).then(function(raw){return openWith(raw).then(function(html){
+      try{if(el("keep").checked)localStorage.setItem(KEY,b64(raw));else localStorage.removeItem(KEY);}catch(e){}
+      show(html);});})
+    .catch(function(){go.disabled=false;go.textContent="Open the planner";msg.textContent="That code isn't right.";el("code").select();});});
+  var saved=null;try{saved=localStorage.getItem(KEY);}catch(e){}
+  if(saved){openWith(b(saved)).then(show).catch(function(){try{localStorage.removeItem(KEY);}catch(e){}gate();});}
+  else gate();
+})();
+</script>
+</body>
+</html>
