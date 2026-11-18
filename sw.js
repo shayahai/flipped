@@ -1,7 +1,7 @@
 // Flipped by AMKAR: keeps the planner opening when there is no reception.
 // Always asks the network first so updates show straight away, and falls back
 // to the last copy saved on this device when the network is slow or missing.
-const BUILD = "20261118105506";
+const BUILD = "20261118111144";
 const CACHE = "flipped-v1";
 const SHELL = ["./", "pdf-lib.min.js", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 
